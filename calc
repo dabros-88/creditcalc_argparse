@@ -87,6 +87,8 @@ def param_test():
         return True
     elif args.payment is None and args.type == "diff" and args.principal and args.periods and args.interest:
         return True
+    elif args.payment < 0 or args.principal < 0 or args.periods < 0 or args.interest < 0:
+        return False
     else:
         return False
 
