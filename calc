@@ -1,0 +1,96 @@
+import math
+import argparse
+import sys
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--type", type=str, help="Type of credit")
+parser.add_argument("--payment", type=int, help="Monthly payment")
+parser.add_argument("--principal", type=int, help='Credit principal')
+parser.add_argument("--periods", type=int, help="Months and/or years to repay Credit")
+parser.add_argument("--interest", type=float, help="Credit interest")
+
+args = parser.parse_args()
+
+credit_type = args.type
+credit_payment = args.payment
+credit_principal = args.principal
+credit_periods = args.periods
+credit_interest = args.interest
+
+def count_of_m_y():
+    m_y_n = round(math.log((args.payment / (args.payment - (args.interest / 100 / 12) * args.principal)),
+                           (args.interest / 100 / 12) + 1))
+    m_y_overpayment = math.ceil(m_y_n * args.payment - args.principal)
+    years = math.ceil(m_y_n // 12)
+    months = math.ceil(m_y_n % 12)
+
+    if m_y_n == 1:
+        print(f"You need {months} month to repay this credit!")
+    elif 1 < m_y_n < 12:
+        print(f"You need {months} months to repay this credit!")
+    elif m_y_n == 12:
+        print(f"You need {years} year to repay this credit!")
+    elif m_y_n % 12 == 0:
+        print(f"You need {years} years to repay this credit!")
+    else:
+        if m_y_n % 12 == 1:
+            print(f"You need {years} years and {months} month to repay this credit!")
+        else:
+            print(f"You need {years} years and {months} months to repay this credit!")
+    print(f"Overpayment = {m_y_overpayment}")
+
+def annuity():
+    ann_a = math.ceil(args.principal * (
+            ((args.interest / 100 / 12) * (1 + (args.interest / 100 / 12)) ** args.periods) / (
+                (1 + (args.interest / 100 / 12)) ** args.periods - 1)))
+    print(f"Your annuity payment = {ann_a}!")
+    print(f"Overpayment = {ann_a * args.periods - args.principal}")
+
+def diff():
+    diff_m = 1
+    diff_overpayment = []
+    while diff_m <= args.periods:
+        diff_d = math.ceil((args.principal / args.periods) + (args.interest / 100 / 12) * (
+                args.principal - (args.principal * (diff_m - 1) / args.periods)))
+        print(f"Month {diff_m}: paid out {diff_d}")
+        diff_overpayment.append(diff_d)
+        diff_m += 1
+    print("")
+    print(f"Overpayment = {math.ceil(sum(diff_overpayment) - args.principal)}")
+
+def principal():
+    prin_p = math.floor(args.payment / (
+            ((args.interest / 100 / 12) * (1 + (args.interest / 100 / 12)) ** args.periods) / ((1 + (args.interest / 100 / 12)) ** args.periods - 1)))
+    prin_overpayment = math.ceil(args.payment * args.periods - prin_p)
+    print(f"Your credit principal = {prin_p}!")
+    print(f"Overpayment = {prin_overpayment}")
+
+def calc():
+    if args.type == "annuity":
+        if args.principal and args.periods and args.interest:
+            annuity()
+        elif args.payment and args.periods and args.interest:
+            principal()
+        elif args.principal and args.payment and args.interest:
+            count_of_m_y()
+    else:
+        diff()
+
+def param_test():
+    if len(sys.argv) - 1 < 4:
+        return False
+    elif args.payment is None and args.principal and args.periods and args.interest:
+        return True
+    elif args.principal is None and args.payment and args.periods and args.interest:
+        return True
+    elif args.periods is None and args.principal and args.payment and args.interest:
+        return True
+    elif args.payment is None and args.type == "diff" and args.principal and args.periods and args.interest:
+        return True
+    else:
+        return False
+
+if param_test() is not False:
+    calc()
+else:
+    print("Incorrect parameters")
